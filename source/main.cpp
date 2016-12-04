@@ -1,8 +1,10 @@
-#include <stdbool.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include "linalg.hpp"
+#include "utils.hpp"
 
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action,
@@ -14,11 +16,17 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 }
 
 
-int main(void) {
+int main() {
   glfwInit();
 
+
+  vector3f vec;
+  vec.x = 3;
+  printf("%s\n", str(vec).c_str());
+
+
   GLFWwindow *window = glfwCreateWindow(480, 480, "", NULL, NULL);
-  glfwSetKeyCallback(window, keyCallback);
+  glfwSetKeyCallback(window, &keyCallback);
 
   glfwMakeContextCurrent(window);
   gladLoadGLLoader((GLADloadproc) &glfwGetProcAddress);

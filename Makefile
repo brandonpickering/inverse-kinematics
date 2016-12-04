@@ -1,12 +1,12 @@
 SOURCEDIR=source
-SOURCE=$(wildcard $(SOURCEDIR)/*.c)
-HEADERS=$(wildcard $(SOURCEDIR)/*.h)
+SOURCE=$(wildcard $(SOURCEDIR)/*.cpp)
+HEADERS=$(wildcard $(SOURCEDIR)/*.hpp) $(wildcard $(SOURCEDIR)/*.inl)
 
 BUILDDIR=build
 OUT=$(BUILDDIR)/as4
 
-CC=gcc
-CFLAGS=-Wall -Wextra -Og -g -I/usr/local/include/glad-3.3-compat
+CC=g++
+CFLAGS=-Wall -Wextra -Og -g -std=c++11 -I/usr/local/include/glad-3.3-compat
 LDFLAGS=-Og -g -lglfw -lglad-3.3-compat -ldl
 
 
