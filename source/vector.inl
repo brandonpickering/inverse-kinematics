@@ -57,6 +57,33 @@ std::string str(const vector<T, N> &v) {
 }
 
 template <typename T, size_t N>
+T square_dist(const vector<T, N> &v1, const vector<T, N> &v2) {
+  T result = 0;
+  for (size_t i = 0; i < N; i++)
+    result += (v1.data[i] - v2.data[i])*(v1.data[i] - v2.data[i]);
+  return result;
+}
+
+template <typename T, size_t N>
+T square_mag(const vector<T, N> &v) {
+  T result = 0;
+  for (size_t i = 0; i < N; i++)
+    result += v.data[i] * v.data[i];
+  return result;
+}
+
+template <typename T, size_t N>
+void comp_clamp_scale(vector<T, N> &dest, const vector<T, N> &v, T clamp) {
+  if (N == 0) return;
+  T maxc = std::abs(v.data[0]);
+  for (size_t i = 1; i < N; i++)
+    if (std::abs(v.data[i]) > maxc) maxc = std::abs(v.data[i]);
+
+  for (size_t i = 0; i < N; i++)
+    dest.data[i] = v.data[i] * clamp / maxc;
+}
+
+template <typename T, size_t N>
 void add(vector<T, N> &dest, const vector<T, N> &v1, const vector<T, N> &v2) {
   for (size_t i = 0; i < N; i++)
     dest.data[i] = v1.data[i] + v2.data[i];

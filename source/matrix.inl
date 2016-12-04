@@ -40,6 +40,16 @@ void identity(matrix<T, N, M> &dest) {
       dest.data[i] = i == j ? 1 : 0;
 }
 
+template <typename T, size_t N>
+matrix<T, 1, N> &row_vector(vector<T, N> &v) {
+  return *(matrix<T, 1, N> *) &v;
+}
+
+template <typename T, size_t N>
+const matrix<T, 1, N> &row_vector(const vector<T, N> &v) {
+  return *(const matrix<T, 1, N> *) &v;
+}
+
 template <typename T, size_t M, size_t N>
 void get_row(vector<T, N> &dest, matrix<T, M, N> &m, size_t index) {
   assert(index < M);

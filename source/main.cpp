@@ -64,6 +64,7 @@ diff_map<N, 2> arm2d_func(const arm2d<N> &arm) {
       set_col(result, i, partial);
     }
   };
+  //map.deriv = diff_sample(map.value).deriv;
 
   return map;
 }
