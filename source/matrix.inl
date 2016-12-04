@@ -27,7 +27,7 @@ std::string str(const matrix<T, M, N> &m) {
   for (size_t i = 0; i < M; i++) {
     res += "( ";
     for (size_t j = 0; j < N; j++)
-      res += stringf("%f ", m.data[M*i + j]);
+      res += stringf("%f ", m.data[N*i + j]);
     res += ")\n";
   }
   return res;
@@ -41,12 +41,26 @@ void identity(matrix<T, N, M> &dest) {
 }
 
 template <typename T, size_t M, size_t N>
+void get_col(vector<T, M> &dest, matrix<T, M, N> &m, size_t index) {
+  assert(index < N);
+  for (size_t i = 0; i < M; i++)
+    dest.data[i] = m.data[N*i + index];
+}
+
+template <typename T, size_t M, size_t N>
+void set_col(matrix<T, M, N> &m, size_t index, const vector<T, M> &v) {
+  assert(index < N);
+  for (size_t i = 0; i < M; i++)
+    m.data[N*i + index] = v.data[i];
+}
+
+template <typename T, size_t M, size_t N>
 void transpose(matrix<T, N, M> &dest, const matrix<T, M, N> &m) {
   assert((void *) &dest != (void *) &m);
 
   for (size_t i = 0; i < M; i++)
     for (size_t j = 0; j < N; j++)
-      dest.data[N*j + i] = m.data[M*i + j];
+      dest.data[M*j + i] = m.data[N*i + j];
 }
 
 template <typename T, size_t M, size_t N>
@@ -64,9 +78,9 @@ void mul(matrix<T, M, O> &dest, const matrix<T, M, N> &m1,
 
   for (size_t i = 0; i < M; i++) {
     for (size_t j = 0; j < O; j++) {
-      dest.data[M*i + j] = 0;
+      dest.data[O*i + j] = 0;
       for (size_t k = 0; k < N; k++)
-        dest.data[M*i + j] += m1.data[M*i + k] * m2.data[N*k + j];
+        dest.data[O*i + j] += m1.data[N*i + k] * m2.data[O*k + j];
     }
   }
 }
@@ -78,7 +92,7 @@ void mul(vector<T, M> &dest, const matrix<T, M, N> &m, const vector<T, N> &v) {
   for (size_t i = 0; i < M; i++) {
     dest.data[i] = 0;
     for (size_t j = 0; j < N; j++)
-      dest.data[i] += m.data[M*i + j] * v.data[j];
+      dest.data[i] += m.data[N*i + j] * v.data[j];
   }
 }
 

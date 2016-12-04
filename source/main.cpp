@@ -49,16 +49,24 @@ void arm2d_get_partial(vector2f &result, const arm2d<N> &arm,
 }
 
 // arm needs to be persistent
-/*template <size_t N>
+template <size_t N>
 diff_map<N, 2> arm2d_func(const arm2d<N> &arm) {
   diff_map<N, 2> map;
 
-  map.value = [&arm](vectorf<N> state) {
-    resturn 
+  map.value = [&arm](vector2f &result, const vectorf<N> &state) {
+    arm2d_get_joint(result, arm, state, N);
+  };
+
+  map.deriv = [&arm](matrixf<2, N> &result, const vectorf<N> &state) {
+    vector2f partial;
+    for (size_t i = 0; i < N; i++) {
+      arm2d_get_partial(partial, arm, state, i);
+      set_col(result, i, partial);
+    }
   };
 
   return map;
-}*/
+}
 
 
 arm2d<4> arm = {
@@ -74,6 +82,8 @@ void update(lfloat dt) {
 
 void render() {
   glClear(GL_COLOR_BUFFER_BIT);
+
+  diff_map<4, 2> func = arm2d_func(arm);
 
   vector2f point;
   vector2f deriv;
@@ -93,7 +103,11 @@ void render() {
   glVertex2f(point.x, point.y);
   arm2d_get_joint(point, arm, state, 4);
   glVertex2f(point.x, point.y);
-  arm2d_get_partial(deriv, arm, state, joint);
+
+  matrixf<2, 4> derivM;
+  func.deriv(derivM, state);
+  get_col(deriv, derivM, joint);
+
   add(point, point, deriv);
   glVertex2f(point.x, point.y);
   glEnd();

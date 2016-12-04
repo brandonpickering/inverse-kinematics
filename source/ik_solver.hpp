@@ -14,6 +14,11 @@ struct diff_map {
 };
 
 template <size_t N, size_t M>
+diff_map<N, M> diff_sample(
+    std::function<void(vectorf<M> &, const vectorf<N> &)> func);
+
+
+template <size_t N, size_t M>
 void ik_solve(vectorf<N> &current, diff_map<N, M> func);
 
 
