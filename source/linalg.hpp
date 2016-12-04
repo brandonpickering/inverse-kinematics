@@ -4,7 +4,8 @@
 
 typedef float lfloat;
 
-#include "vector.hpp"
+#include "vector.inl"
+#include "matrix.inl"
 
 
 #endif

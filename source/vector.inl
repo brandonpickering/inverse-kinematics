@@ -1,10 +1,9 @@
-#ifndef _VECTOR_HPP
-#define _VECTOR_HPP
+#ifndef _VECTOR_INL
+#define _VECTOR_INL
 
 
 #include <string>
 
-#include "linalg.hpp"
 #include "utils.hpp"
 
 
@@ -38,9 +37,12 @@ struct vector<T, 4> {
 };
 
 
-typedef vector<lfloat, 2> vector2f;
-typedef vector<lfloat, 3> vector3f;
-typedef vector<lfloat, 4> vector4f;
+template <size_t N>
+using vectorf = vector<lfloat, N>;
+
+typedef vectorf<2> vector2f;
+typedef vectorf<3> vector3f;
+typedef vectorf<4> vector4f;
 
 
 template <typename T, size_t N>

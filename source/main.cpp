@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdlib>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -22,7 +23,31 @@ int main() {
 
   vector3f vec;
   vec.x = 3;
+  vec.y = 2;
+  vec.data[2] = 1;
   printf("%s\n", str(vec).c_str());
+
+  matrixf<2, 3> mat;
+  mat.data[0] = 2;
+  mat.data[4] = 1;
+  printf("%s", str(mat).c_str());
+
+  vector2f vec2;
+  mul(vec2, mat, vec);
+  printf("%s\n", str(vec2).c_str());
+
+  matrixf<3, 4> mat2;
+  for (size_t i = 0; i < 12; i++)
+    mat2.data[i] = (lfloat) rand() / RAND_MAX;
+  printf("%s\n", str(mat2).c_str());
+
+  matrixf<2, 4> mat3;
+  mul(mat3, mat, mat2);
+  printf("%s\n", str(mat3).c_str());
+
+  matrixf<4, 2> mat4;
+  transpose(mat4, mat3);
+  printf("%s\n", str(mat4).c_str());
 
 
   GLFWwindow *window = glfwCreateWindow(480, 480, "", NULL, NULL);
