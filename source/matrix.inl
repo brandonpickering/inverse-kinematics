@@ -41,6 +41,18 @@ void identity(matrix<T, N, M> &dest) {
 }
 
 template <typename T, size_t M, size_t N>
+void get_row(vector<T, N> &dest, matrix<T, M, N> &m, size_t index) {
+  assert(index < M);
+  dest = *(vector<T, N> *) &m.data[N*index];
+}
+
+template <typename T, size_t M, size_t N>
+void set_row(matrix<T, M, N> &m, size_t index, const vector<T, N> &v) {
+  assert(index < M);
+  *(vector<T, N> *) &m.data[N*index] = v;
+}
+
+template <typename T, size_t M, size_t N>
 void get_col(vector<T, M> &dest, matrix<T, M, N> &m, size_t index) {
   assert(index < N);
   for (size_t i = 0; i < M; i++)

@@ -17,4 +17,14 @@ std::string stringf(const char *format, T... args) {
 }
 
 
+#define PI 3.14159265358979
+
+template <typename T>
+T angle_rep(T angle) {
+  while (angle >= PI) angle -= 2*PI;
+  while (angle < -PI) angle += 2*PI;
+  return angle;
+}
+
+
 #endif

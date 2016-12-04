@@ -31,7 +31,30 @@ diff_map<N, M> diff_sample(
 
 
 template <size_t N, size_t M>
-void ik_solve(vectorf<N> &current, diff_map<N, M> func) {
+void ik_solve(vectorf<N> &current, diff_map<N, M> func,
+    const vectorf<M> &target) {
+  for (int i = 0; i < 100; i++) {
+    vectorf<M> value;
+    func.value(value, current);
+
+    matrixf<M, N> deriv;
+    func.deriv(deriv, current);
+
+    vectorf<M> evderiv;
+    sub(evderiv, value, target);
+    mul(evderiv, evderiv, (lfloat) 2);
+    matrixf<1, M> ederiv;
+    set_row(ederiv, 0, evderiv);
+
+    matrixf<1, N> gradient;
+    mul(gradient, ederiv, deriv);
+
+    vectorf<N> dstate;
+    get_row(dstate, gradient, 0);
+    mul(dstate, dstate, (lfloat) -0.01);
+
+    add(current, current, dstate);
+  }
 }
 
 

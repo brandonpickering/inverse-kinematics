@@ -75,41 +75,27 @@ arm2d<4> arm = {
 };
 vectorf<4> state = {0, 0, 0, 0};
 
+vector2f mouse_pos;
+
 void update(lfloat dt) {
+  (void) dt;
+  static diff_map<4, 2> func = arm2d_func(arm);
+  ik_solve(state, func, mouse_pos);
+
   for (size_t i = 0; i < 4; i++)
-    state.data[i] += 0.5 * dt;
+    state.data[i] = angle_rep(state.data[i]);
 }
 
 void render() {
   glClear(GL_COLOR_BUFFER_BIT);
 
-  diff_map<4, 2> func = arm2d_func(arm);
-
-  vector2f point;
-  vector2f deriv;
-
   glColor3f(1, 1, 1);
   glBegin(GL_LINE_STRIP);
+  vector2f point;
   for (size_t i = 0; i <= 4; i++) {
     arm2d_get_joint(point, arm, state, i);
     glVertex2f(point.x, point.y);
   }
-  glEnd();
-
-  glColor3f(1, 0, 0);
-  glBegin(GL_LINE_STRIP);
-  size_t joint = 1;
-  arm2d_get_joint(point, arm, state, joint);
-  glVertex2f(point.x, point.y);
-  arm2d_get_joint(point, arm, state, 4);
-  glVertex2f(point.x, point.y);
-
-  matrixf<2, 4> derivM;
-  func.deriv(derivM, state);
-  get_col(deriv, derivM, joint);
-
-  add(point, point, deriv);
-  glVertex2f(point.x, point.y);
   glEnd();
 }
 
@@ -123,10 +109,12 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 }
 
 
+#include <unistd.h>
+
+
 int main() {
   glfwInit();
 
-  glfwSwapInterval(1);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   GLFWwindow *window = glfwCreateWindow(480, 480, "", NULL, NULL);
   glfwSetKeyCallback(window, &keyCallback);
@@ -134,21 +122,37 @@ int main() {
   glfwMakeContextCurrent(window);
   gladLoadGLLoader((GLADloadproc) &glfwGetProcAddress);
 
-  double lastTime = glfwGetTime();
+  double last_time = glfwGetTime();
+  double fps_time = glfwGetTime();
+  int frames = 0;
 
   while (!glfwWindowShouldClose(window)) {
-    double dt = glfwGetTime() - lastTime;
-    lastTime = glfwGetTime();
-    update(dt);
-
     int width, height;
     glfwGetWindowSize(window, &width, &height);
+
+    double mouseX, mouseY;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+    mouse_pos.x = 2*mouseX / width - 1;
+    mouse_pos.y = 1 - 2*mouseY / height;
+
+    double dt = glfwGetTime() - last_time;
+    last_time = glfwGetTime();
+    update(dt);
+
     glViewport(0, 0, width, height);
 
     render();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
+
+    frames++;
+    if (glfwGetTime() - fps_time >= 1) {
+      fps_time = glfwGetTime();
+      std::string fps = stringf("%d", frames);
+      glfwSetWindowTitle(window, fps.data());
+      frames = 0;
+    }
   }
 
   glfwTerminate();

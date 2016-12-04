@@ -19,7 +19,8 @@ diff_map<N, M> diff_sample(
 
 
 template <size_t N, size_t M>
-void ik_solve(vectorf<N> &current, diff_map<N, M> func);
+void ik_solve(vectorf<N> &current, diff_map<N, M> func,
+    const vectorf<M> &target);
 
 
 #include "ik_solver.inl"
