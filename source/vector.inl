@@ -78,6 +78,7 @@ void comp_clamp_scale(vector<T, N> &dest, const vector<T, N> &v, T clamp) {
   T maxc = std::abs(v.data[0]);
   for (size_t i = 1; i < N; i++)
     if (std::abs(v.data[i]) > maxc) maxc = std::abs(v.data[i]);
+  if (maxc <= clamp) return;
 
   for (size_t i = 0; i < N; i++)
     dest.data[i] = v.data[i] * clamp / maxc;

@@ -33,9 +33,9 @@ std::string str(const matrix<T, M, N> &m) {
   return res;
 }
 
-template <typename T, size_t M, size_t N>
-void identity(matrix<T, N, M> &dest) {
-  for (size_t i = 0; i < M; i++)
+template <typename T, size_t N>
+void identity(matrix<T, N, N> &dest) {
+  for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < N; j++)
       dest.data[i] = i == j ? 1 : 0;
 }
@@ -48,6 +48,16 @@ matrix<T, 1, N> &row_vector(vector<T, N> &v) {
 template <typename T, size_t N>
 const matrix<T, 1, N> &row_vector(const vector<T, N> &v) {
   return *(const matrix<T, 1, N> *) &v;
+}
+
+template <typename T, size_t M, size_t N>
+vector<T, N> &get_row(matrix<T, M, N> &m, size_t index) {
+  return *(vector<T, N> *) &m.data[N*index];
+}
+
+template <typename T, size_t M, size_t N>
+const vector<T, N> &get_row(const matrix<T, M, N> &m, size_t index) {
+  return *(const vector<T, N> *) &m.data[N*index];
 }
 
 template <typename T, size_t M, size_t N>
@@ -90,6 +100,12 @@ void add(matrix<T, M, N> &dest, const matrix<T, M, N> &m1,
     const matrix<T, M, N> &m2) {
   for (size_t i = 0; i < M*N; i++)
     dest.data[i] = m1.data[i] + m2.data[i];
+}
+
+template <typename T, size_t M, size_t N>
+void mul(matrix<T, M, N> &dest, const matrix<T, M, N> &m, T s) {
+  for (size_t i = 0; i < M*N; i++)
+    dest.data[i] = m.data[i] * s;
 }
 
 template <typename T, size_t M, size_t N, size_t O>
