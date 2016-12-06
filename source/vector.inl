@@ -2,6 +2,7 @@
 #define _VECTOR_INL
 
 
+#include <cmath>
 #include <string>
 
 #include "utils.hpp"
@@ -56,6 +57,16 @@ std::string str(const vector<T, N> &v) {
   return res + ")";
 }
 
+template <typename T, size_t N, size_t M>
+vector<T, M> &subvec(vector<T, N> &v, size_t start) {
+  return *(vector<T, M> *) &v.data[start];
+}
+
+template <typename T, size_t N, size_t M>
+const vector<T, M> &subvec(const vector<T, N> &v, size_t start) {
+  return *(const vector<T, M> *) &v.data[start];
+}
+
 template <typename T, size_t N>
 T square_dist(const vector<T, N> &v1, const vector<T, N> &v2) {
   T result = 0;
@@ -70,6 +81,15 @@ T square_mag(const vector<T, N> &v) {
   for (size_t i = 0; i < N; i++)
     result += v.data[i] * v.data[i];
   return result;
+}
+
+template <typename T, size_t N>
+void normalize(vector<T, N> &dest, const vector<T, N> &v) {
+  T smag = square_mag(v);
+  if (smag <= (T) 0.00001)
+    dest = v;
+  else
+    mul(dest, v, 1/std::sqrt(smag));
 }
 
 template <typename T, size_t N>

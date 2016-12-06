@@ -37,7 +37,33 @@ template <typename T, size_t N>
 void identity(matrix<T, N, N> &dest) {
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < N; j++)
-      dest.data[i] = i == j ? 1 : 0;
+      dest.data[N*i + j] = i == j ? 1 : 0;
+}
+
+template <typename T>
+void rotate(matrix<T, 3, 3> &dest, vector<T, 3> axis, lfloat angle) {
+  normalize(axis, axis);
+
+  matrix<T, 3, 3> rcross = {
+    0, -axis.z, axis.y,
+    axis.z, 0, -axis.x,
+    -axis.y, axis.x, 0,
+  };
+
+  matrix<T, 3, 3> sinm;
+  identity(sinm);
+  mul(sinm, sinm, std::sin(angle));
+
+  matrix<T, 3, 3> cosm;
+  identity(cosm);
+  mul(cosm, cosm, 1 - std::cos(angle));
+
+  mul(dest, rcross, sinm);
+  dest.data[0] += 1; dest.data[4] += 1; dest.data[8] += 1;
+
+  mul(sinm, rcross, cosm);
+  mul(cosm, rcross, sinm);
+  add(dest, dest, cosm);
 }
 
 template <typename T, size_t N>

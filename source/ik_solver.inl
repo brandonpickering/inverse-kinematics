@@ -149,7 +149,7 @@ template <size_t N, size_t M>
 void ik_solve(vectorf<N> &current, diff_map<N, M> func,
     const vectorf<M> &target) {
 
-  ik_solve_greedy(current, func, target, &ik_damped_squares_step);
+  ik_solve_stable(current, func, target, &ik_gradient_descent_step);
 }
 
 
