@@ -37,4 +37,19 @@ void arm3d_get_joint(vector3f &result, const arm3d<N> &arm,
 }
 
 
+// arm needs to be persistent
+template <size_t N>
+diff_map<3*N, 3> arm3d_func(const arm3d<N> &arm) {
+  diff_map<3*N, 3> map;
+
+  map.value = [&arm](vector3f &result, const vectorf<3*N> &state) {
+    arm3d_get_joint(result, arm, state, N);
+  };
+
+  map.deriv = diff_sample(map.value).deriv;
+
+  return map;
+}
+
+
 #endif

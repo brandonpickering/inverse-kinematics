@@ -41,17 +41,13 @@ vector3f target_move;
 
 
 void update(lfloat dt) {
-  (void) dt;
-  //static diff_map<num_links, 2> func = arm2d_func(arm);
-  //ik_solve(state, func, mouse_pos);
-
-  for (size_t i = 0; i < 3*num_links; i++)
-    state.data[i] += dt;
-
   vector3f targ_vel;
   normalize(targ_vel, target_move);
   mul(targ_vel, targ_vel, 5 * dt);
   add(target, target, targ_vel);
+
+  static diff_map<3*num_links, 3> func = arm3d_func(arm);
+  ik_solve(state, func, target);
 }
 
 void render() {
