@@ -110,7 +110,7 @@ void ik_solve_stable(vectorf<N> &current, diff_map<N, M> func,
   static vectorf<N> next;
   vectorf<M> value;
 
-  for (int k = 0; k < 100; k++) {
+  for (int k = 0; k < 200; k++) {
     func.value(value, current);
     lfloat error = square_dist(value, target);
     if (error < (lfloat) 0.001) break;
@@ -122,7 +122,7 @@ void ik_solve_stable(vectorf<N> &current, diff_map<N, M> func,
     for (int k2 = 0; k2 < 100; k2++) {
       add(next, current, step);
       func.value(value, next);
-      if (square_dist(value, target) < error + 0.0001) {
+      if (square_dist(value, target) < error + 0.001) {
         improve = true;
         break;
       }

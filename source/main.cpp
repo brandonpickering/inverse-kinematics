@@ -31,7 +31,7 @@ arm3d<num_links> arm = {
   {4, 3, 2, 2},
 };
 
-vectorf<3*num_links> state = {};
+vectorf<3*num_links> state;
 
 
 lfloat runtime = 0;
@@ -44,45 +44,115 @@ int misc_inp[3];
 
 
 vector3f target_func(lfloat t) {
+  vector3f result;
+  t = t*0.7 + 5;
+
+  result.x = 0.8 * std::cos(t);
+  result.y = std::sin(0.1 * t);
+  result.y *= result.y;
+  result.z = 0.5 * std::sin(0.5 * t);
+
+  lfloat s = (t - 13.5) / 5;
+  if (s >= 0 && s <= 1)
+    mul(result, result, std::cos(s * PI));
+  if (s > 1) mul(result, result, (lfloat) -1);
+  if (s > 0.5) result.y += s - 0.5;
+
   lfloat len = 0;
   for (size_t i = 0; i < num_links; i++)
     len += arm.lengths[i];
-
-  return {len, 0, 0};
+  mul(result, result, len);
+  return result;
 }
 
 
 void update(lfloat dt) {
+  dt = std::min(dt, 1/30.0);
   runtime += dt;
 
-  vector3f targ_vel;
-  normalize(targ_vel, target_move);
-  mul(targ_vel, targ_vel, 5 * dt);
-  add(target, target, targ_vel);
+  //vector3f targ_vel;
+  //normalize(targ_vel, target_move);
+  //mul(targ_vel, targ_vel, 5 * dt);
+  //add(target, target, targ_vel);
 
   //for (int i = 0; i < 3; i++)
     //state.data[2*3 + i] += misc_inp[i]*dt;
 
-  //target = target_func(runtime);
+  target = target_func(runtime);
 
   static diff_map<3*num_links, 3> func = arm3d_func(arm);
   //if (false)
     ik_solve(state, func, target);
 }
 
+
+void draw_segment(float len) {
+  float rad = 0.3;
+  int num_sides = 4;
+
+  glColor3f(1, 1, 1);
+  for (int i = 0; i < num_sides; i++) {
+    float a0 = 2*PI * i / num_sides;
+    float a1 = 2*PI * (i+1) / num_sides;
+    float y0 = rad * std::cos(a0), y1 = rad * std::cos(a1);
+    float z0 = rad * std::sin(a0), z1 = rad * std::sin(a1);
+    vector3<float> normal = {0, y0+y1, z0+z1};
+    normalize(normal, normal);
+
+    glNormal3f(normal.x, normal.y, normal.z);
+    glBegin(GL_TRIANGLES);
+    glVertex3f(0, y0, z0);
+    glVertex3f(0, y1, z1);
+    glVertex3f(len, 0, 0);//y1, z1);
+    //glVertex3f(len, y0, z0);
+    glEnd();
+  }
+}
+
 void render() {
+  glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-1, 1, -1, 1, 1, 100);
-  glTranslatef(0, -5, -12);
+  glFrustum(-1, 1, -1, 1, 2, 100);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+
+  float pos[] = {3, 5, 15, 1};
+  glLightfv(GL_LIGHT0, GL_POSITION, &pos[0]);
+
+
+  lfloat camrad = 20;
+  lfloat camspeed = 0.2;
+  vector3f camera = {
+    camrad*std::sin(camspeed*runtime),
+    5,
+    camrad*std::cos(camspeed*runtime),
+  };
+  float roty = -PI/2 + std::atan2(camera.z, camera.x);
+  glRotatef(roty * 180/PI, 0, 1, 0);
+  glTranslatef(-camera.x, -camera.y, -camera.z);
+  //glTranslatef(0, -5, -12);
 
 
   static diff_map<3*num_links, 3> func = arm3d_func_samp(arm);
   static diff_map<3*num_links, 3> func2 = arm3d_func(arm);
 
 
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glColor3f(0.3f, 0.3f, 0.3f);
+  static bool initial = true;
+  if (initial) {
+    vector3f point;
+    arm3d_get_joint(point, arm, state, num_links);
+    lfloat dist = square_dist(point, target);
+    if (dist > 0.01) return;
+    initial = false;
+  }
+
+
+  glColor4f(1, 1, 1, 0.2f);
+  glNormal3f(0, 1, 0);
   glBegin(GL_LINES);
   const int span = 10;
   for (int i = -span; i <= span; i++) {
@@ -93,7 +163,7 @@ void render() {
   }
   glEnd();
 
-  glColor3f(0, 1, 0);
+  /*glColor3f(0, 1, 0);
   glBegin(GL_TRIANGLE_FAN);
   glVertex3f(target.x, target.y, target.z);
   for (int i = 0; i <= 10; i++) {
@@ -101,16 +171,54 @@ void render() {
     float a = 2 * 3.1415926 * (float) i / 10;
     glVertex3f(target.x + r*std::cos(a), target.y + r*std::sin(a), target.z);
   }
-  glEnd();
+  glEnd();*/
 
-  glColor3f(1, 1, 1);
+  glDisable(GL_LIGHTING);
+  glBegin(GL_LINE_STRIP);
+  float targd = 0.5;
+  for (float i = -targd; i <= targd; i += 0.1) {
+    vector3f targ = target_func(runtime + i);
+    glColor4f(0, 1, 0, (targd - std::abs(i))/targd);
+    glVertex3f((float) targ.x, (float) targ.y, (float) targ.z);
+  }
+  glEnd();
+  glColor3f(0, 1, 0);
+  glBegin(GL_TRIANGLE_FAN);
+  glVertex3f(target.x, target.y, target.z);
+  for (int i = 0; i <= 10; i++) {
+    float r = 0.1f;
+    float a = 2 * 3.1415926 * (float) i / 10;
+    vector3f eye;
+    sub(eye, camera, target);
+    vector3f lx; cross(lx, eye, {0,1,0}); normalize(lx, lx);
+    vector3f ly; cross(ly, eye, lx); normalize(ly, ly);
+    vector3f p = target;
+    vector3f t; mul(t, lx, r * (lfloat) std::cos(a)); add(p, p, t);
+    mul(t, ly, r * (lfloat) std::sin(a)); add(p, p, t);
+    //glVertex3f(target.x + r*std::cos(a), target.y + r*std::sin(a), target.z);
+    glVertex3f(p.x, p.y, p.z);
+  }
+  glEnd();
+  glEnable(GL_LIGHTING);
+
+  /*glColor3f(1, 1, 1);
   glBegin(GL_LINE_STRIP);
   vector3f point;
   for (size_t i = 0; i <= num_links; i++) {
     arm3d_get_joint(point, arm, state, i);
     glVertex3f(point.x, point.y, point.z);
   }
-  glEnd();
+  glEnd();*/
+
+  for (size_t i = 0; i < num_links; i++) {
+    vector3f axis = subvec<lfloat, 3*num_links, 3>(state, 3*i);
+    lfloat angle = std::sqrt(square_mag(axis));
+    if (angle > 0.00001) mul(axis, axis, 1/angle);
+
+    glRotatef(angle * 180/PI, axis.x, axis.y, axis.z);
+    draw_segment((float) arm.lengths[i]);
+    glTranslatef(arm.lengths[i], 0, 0);
+  }
 
   /*
   glColor3f(1, 0, 0);
@@ -211,11 +319,21 @@ int main() {
   glfwInit();
 
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_SAMPLES, 4);
   GLFWwindow *window = glfwCreateWindow(480, 480, "", NULL, NULL);
   glfwSetKeyCallback(window, &keyCallback);
 
   glfwMakeContextCurrent(window);
   gladLoadGLLoader((GLADloadproc) &glfwGetProcAddress);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
 
   double last_time = glfwGetTime();
   double fps_time = glfwGetTime();
