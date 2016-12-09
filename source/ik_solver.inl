@@ -68,7 +68,7 @@ void ik_gradient_descent_step(vectorf<N> &step, const vectorf<N> &current,
 template <size_t N, size_t M>
 void ik_damped_squares_step(vectorf<N> &step, const vectorf<N> &current,
     diff_map<N, M> func, const vectorf<M> &target) {
-  const lfloat lambda = 1;
+  const lfloat lambda = 10;
 
   static matrixf<M, N> deriv;
   static matrixf<N, M> deriv_trans;
@@ -78,27 +78,16 @@ void ik_damped_squares_step(vectorf<N> &step, const vectorf<N> &current,
   func.value(value, current);
   sub(error, target, value);
 
+  // coeff = JJ^T + l^2
   func.deriv(deriv, current);
   transpose(deriv_trans, deriv);
   mul(coeff, deriv, deriv_trans);
   for (size_t i = 0; i < M; i++) coeff.data[M*i + i] += lambda*lambda;
 
+  // (JJ^T + l^2)v = e
+  lin_solve(value, coeff, error);
 
-  // temp sol start
-
-  lfloat det = coeff.data[0] * coeff.data[3] - coeff.data[1] * coeff.data[2];
-
-  lfloat temp;
-  (temp = coeff.data[0], coeff.data[0] = coeff.data[3], coeff.data[3] = temp);
-  coeff.data[1] = -coeff.data[1];
-  coeff.data[2] = -coeff.data[2];
-  mul(coeff, coeff, 1/det);
-
-  mul(value, coeff, error);
-
-  // temp sol end
-
-
+  // step = J^T v
   mul(step, deriv_trans, value);
 }
 
@@ -133,7 +122,7 @@ void ik_solve_stable(vectorf<N> &current, diff_map<N, M> func,
     for (int k2 = 0; k2 < 100; k2++) {
       add(next, current, step);
       func.value(value, next);
-      if (square_dist(value, target) < error) {
+      if (square_dist(value, target) < error + 0.0001) {
         improve = true;
         break;
       }
@@ -149,7 +138,7 @@ template <size_t N, size_t M>
 void ik_solve(vectorf<N> &current, diff_map<N, M> func,
     const vectorf<M> &target) {
 
-  ik_solve_greedy(current, func, target, &ik_gradient_descent_step);
+  ik_solve_stable(current, func, target, &ik_damped_squares_step);
 }
 
 

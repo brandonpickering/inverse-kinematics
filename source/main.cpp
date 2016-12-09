@@ -34,6 +34,8 @@ arm3d<num_links> arm = {
 vectorf<3*num_links> state = {};
 
 
+lfloat runtime = 0;
+
 vector2f mouse_pos;
 
 vector3f target;
@@ -41,15 +43,27 @@ vector3f target_move;
 int misc_inp[3];
 
 
+vector3f target_func(lfloat t) {
+  lfloat len = 0;
+  for (size_t i = 0; i < num_links; i++)
+    len += arm.lengths[i];
+
+  return {len, 0, 0};
+}
+
+
 void update(lfloat dt) {
+  runtime += dt;
+
   vector3f targ_vel;
-  //if (rand() % 1000 == 0) for (size_t i = 0; i < 3; i++) target_move.data[i] = 2*(lfloat) rand() / RAND_MAX - 1;
   normalize(targ_vel, target_move);
   mul(targ_vel, targ_vel, 5 * dt);
   add(target, target, targ_vel);
 
   //for (int i = 0; i < 3; i++)
     //state.data[2*3 + i] += misc_inp[i]*dt;
+
+  //target = target_func(runtime);
 
   static diff_map<3*num_links, 3> func = arm3d_func(arm);
   //if (false)
