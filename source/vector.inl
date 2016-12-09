@@ -2,6 +2,7 @@
 #define _VECTOR_INL
 
 
+#include <cassert>
 #include <cmath>
 #include <string>
 
@@ -40,6 +41,13 @@ struct vector<T, 4> {
 
 template <size_t N>
 using vectorf = vector<lfloat, N>;
+
+template <typename T>
+using vector2 = vector<T, 2>;
+template <typename T>
+using vector3 = vector<T, 3>;
+template <typename T>
+using vector4 = vector<T, 4>;
 
 typedef vectorf<2> vector2f;
 typedef vectorf<3> vector3f;
@@ -81,6 +89,15 @@ T square_mag(const vector<T, N> &v) {
   for (size_t i = 0; i < N; i++)
     result += v.data[i] * v.data[i];
   return result;
+}
+
+template <typename T>
+void cross(vector3<T> &dest, const vector3<T> &v1, const vector3<T> &v2) {
+  assert(&dest != &v1 && &dest != &v2);
+
+  dest.x = v1.y*v2.z - v1.z*v2.y;
+  dest.y = v1.z*v2.x - v1.x*v2.z;
+  dest.z = v1.x*v2.y - v1.y*v2.x;
 }
 
 template <typename T, size_t N>

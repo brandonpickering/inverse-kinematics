@@ -28,7 +28,7 @@ const size_t num_links = 4;
 
 arm3d<num_links> arm = {
   {0, 0, 0},
-  {4, 3, 2, 1},
+  {4, 3, 2, 2},
 };
 
 vectorf<3*num_links> state = {};
@@ -38,22 +38,32 @@ vector2f mouse_pos;
 
 vector3f target;
 vector3f target_move;
+int misc_inp[3];
 
 
 void update(lfloat dt) {
   vector3f targ_vel;
+  //if (rand() % 1000 == 0) for (size_t i = 0; i < 3; i++) target_move.data[i] = 2*(lfloat) rand() / RAND_MAX - 1;
   normalize(targ_vel, target_move);
   mul(targ_vel, targ_vel, 5 * dt);
   add(target, target, targ_vel);
 
+  //for (int i = 0; i < 3; i++)
+    //state.data[2*3 + i] += misc_inp[i]*dt;
+
   static diff_map<3*num_links, 3> func = arm3d_func(arm);
-  ik_solve(state, func, target);
+  //if (false)
+    ik_solve(state, func, target);
 }
 
 void render() {
   glLoadIdentity();
   glFrustum(-1, 1, -1, 1, 1, 100);
   glTranslatef(0, -5, -12);
+
+
+  static diff_map<3*num_links, 3> func = arm3d_func_samp(arm);
+  static diff_map<3*num_links, 3> func2 = arm3d_func(arm);
 
 
   glClear(GL_COLOR_BUFFER_BIT);
@@ -87,6 +97,52 @@ void render() {
     glVertex3f(point.x, point.y, point.z);
   }
   glEnd();
+
+  /*
+  glColor3f(1, 0, 0);
+  size_t index = 0;
+  static matrix<lfloat, 3, 3*num_links> deriv;
+  func.deriv(deriv, state);
+  static vectorf<3*num_links> samp;
+  for (size_t i = 0; i < 3*num_links; i++) samp.data[i] = 0;
+  samp.data[3*index] = 1;
+  vector3f partial;
+  mul(partial, deriv, samp);
+  add(partial, partial, point);
+  glBegin(GL_LINES);
+  glVertex3f(point.x, point.y, point.z);
+  glVertex3f(partial.x, partial.y, partial.z);
+  glEnd();
+
+  glColor3f(0, 1, 0);
+  func2.deriv(deriv, state);
+  for (size_t i = 0; i < 3*num_links; i++) samp.data[i] = 0;
+  samp.data[3*index] = 1;
+  mul(partial, deriv, samp);
+  add(partial, partial, point);
+
+  glBegin(GL_LINES);
+  glVertex3f(point.x + 0.2, point.y, point.z);
+  glVertex3f(partial.x + 0.2, partial.y, partial.z);
+  glEnd();
+  */
+
+  /*
+  glColor3f(1, 0, 0);
+  cross(partial, point, {1, 0, 0});
+  mul(partial, partial, (lfloat) -1);
+  add(partial, partial, point);
+  glBegin(GL_LINES);
+  glVertex3f(point.x, point.y, point.z);
+  glVertex3f(partial.x, partial.y, partial.z);
+  glEnd();
+
+  glColor3f(0, 1, 0);
+  glBegin(GL_LINES);
+  glVertex3f(0, 0, 0);
+  glVertex3f(state.data[0], state.data[1], state.data[2]);
+  glEnd();
+  */
 }
 
 
@@ -122,6 +178,16 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
         target_move.y = -1;
       else
         target_move.z = 1;
+      break;
+
+    case GLFW_KEY_A:
+      misc_inp[0] = action == GLFW_PRESS ? (mods & GLFW_MOD_SHIFT ? -1 : 1) : 0;
+      break;
+    case GLFW_KEY_S:
+      misc_inp[1] = action == GLFW_PRESS ? (mods & GLFW_MOD_SHIFT ? -1 : 1) : 0;
+      break;
+    case GLFW_KEY_D:
+      misc_inp[2] = action == GLFW_PRESS ? (mods & GLFW_MOD_SHIFT ? -1 : 1) : 0;
       break;
   }
 }

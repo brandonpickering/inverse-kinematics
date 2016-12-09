@@ -40,16 +40,15 @@ void arm2d_get_partial(vector2f &result, const arm2d<N> &arm,
   (temp = result.x, result.x = -result.y, result.y = temp);
 }
 
-// arm needs to be persistent
 template <size_t N>
 diff_map<N, 2> arm2d_func(const arm2d<N> &arm) {
   diff_map<N, 2> map;
 
-  map.value = [&arm](vector2f &result, const vectorf<N> &state) {
+  map.value = [arm](vector2f &result, const vectorf<N> &state) {
     arm2d_get_joint(result, arm, state, N);
   };
 
-  map.deriv = [&arm](matrixf<2, N> &result, const vectorf<N> &state) {
+  map.deriv = [arm](matrixf<2, N> &result, const vectorf<N> &state) {
     vector2f partial;
     for (size_t i = 0; i < N; i++) {
       arm2d_get_partial(partial, arm, state, i);

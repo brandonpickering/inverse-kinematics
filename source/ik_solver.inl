@@ -10,7 +10,7 @@ diff_map<N, M> diff_sample(
   map.value = func;
 
   map.deriv = [func](matrixf<M, N> &result, const vectorf<N> &state) {
-    const lfloat delta = 0.001f;
+    const lfloat delta = 0.01f;
     static vectorf<N> state1;
     vectorf<M> value0, value1;
     func(value0, state);
@@ -121,13 +121,13 @@ void ik_solve_stable(vectorf<N> &current, diff_map<N, M> func,
   static vectorf<N> next;
   vectorf<M> value;
 
-  for (int k = 0; k < 1000; k++) {
+  for (int k = 0; k < 100; k++) {
     func.value(value, current);
     lfloat error = square_dist(value, target);
-    if (error < (lfloat) 0.0001) break;
+    if (error < (lfloat) 0.001) break;
 
     (*stepper)(step, current, func, target);
-    comp_clamp_scale(step, step, (lfloat) 0.01);
+    comp_clamp_scale(step, step, (lfloat) 0.001);
 
     bool improve = false;
     for (int k2 = 0; k2 < 100; k2++) {
@@ -149,7 +149,7 @@ template <size_t N, size_t M>
 void ik_solve(vectorf<N> &current, diff_map<N, M> func,
     const vectorf<M> &target) {
 
-  ik_solve_stable(current, func, target, &ik_gradient_descent_step);
+  ik_solve_greedy(current, func, target, &ik_gradient_descent_step);
 }
 
 

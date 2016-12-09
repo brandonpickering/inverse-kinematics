@@ -41,14 +41,20 @@ void identity(matrix<T, N, N> &dest) {
 }
 
 template <typename T>
+void cross(matrix<T, 3, 3> &dest, vector<T, 3> r) {
+  dest = {
+    0, -r.z, r.y,
+    r.z, 0, -r.x,
+    -r.y, r.x, 0,
+  };
+}
+
+template <typename T>
 void rotate(matrix<T, 3, 3> &dest, vector<T, 3> axis, lfloat angle) {
   normalize(axis, axis);
 
-  matrix<T, 3, 3> rcross = {
-    0, -axis.z, axis.y,
-    axis.z, 0, -axis.x,
-    -axis.y, axis.x, 0,
-  };
+  matrix<T, 3, 3> rcross;
+  cross(rcross, axis);
 
   matrix<T, 3, 3> sinm;
   identity(sinm);
